@@ -1,62 +1,76 @@
+#Modules
 import random
 import sys
 import pygame
 
-snake = [[10, 15], [11, 15], [12, 15]]
-direction = [1, 0]
-fruit = [10, 10]
+#Constants
+WIDTH = 30      # number of cells
+HEIGHT = 30     # number of cells
+CELL_SIZE = 20  # number of pixels
+FPS = 3  # frames per second
+WHITE = [255, 255, 255]
+BLACK = [0, 0, 0]
+RED = [255, 0, 0]
+COLORS = {"background": WHITE, "snake": BLACK, "fruit": RED}
 
-score = 0
+#Helper Function
+def exit():
+    pygame.quit()
+    sys.exit()
 
-pygame.init()
-screen = pygame.display.set_mode([600, 600])
-clock = pygame.time.Clock()
+def setup():
+    pygame.init()
+    screen = pygame.display.set_mode([WIDTH*CELL_SIZE, HEIGHT*CELL_SIZE])
+    clock = pygame.time.Clock()
+    return screen, clock
 
-while True:
+def wait_for_next_frame(clock):
+    clock.tick(FPS)
+
+def draw_frame(screen):
+    screen.fill(COLORS['background'])
+    rect_ = [fruit[0] * CELL_SIZE, fruit[1] * CELL_SIZE, CELL_SIZE, CELL_SIZE]
+    pygame.draw.rect(screen, COLORS['fruit'], rect_)
+
+    for x, y in snake:
+        rect = [CELL_SIZE * x, CELL_SIZE * y, CELL_SIZE, CELL_SIZE]
+        pygame.draw.rect(screen, COLORS['snake'], rect)
+
+    pygame.display.update()
+
+def handle_events():
+    global direction
+    direction = [0,1]
+    UP = [0, -1]
+    DOWN = [0, 1]
+    LEFT = [-1, 0]
+    RIGHT = [1, 0]
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+            exit()
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_q:
-                pygame.quit()
-                sys.exit()
-
+                exit()
             elif event.key == pygame.K_RIGHT:
                 print("→")
-                direction = [1, 0]
-
+                direction = RIGHT
             elif event.key == pygame.K_LEFT:
                 print("←")
-                direction = [-1, 0]
-
+                direction = LEFT
             elif event.key == pygame.K_UP:
                 print("↑")
-                direction = [0, -1]
-
+                direction = UP
             elif event.key == pygame.K_DOWN:
                 print("↓")
-                direction = [0, 1]
+                direction = DOWN
 
-    screen.fill([0, 0, 0])
-
-    def is_white(i, j):
-        if (i + j) % 2 == 0:
-            return True
-        else:
-            return False
-
-    for i in range(30):
-        for j in range(30):
-            x = i * 20
-            y = j * 20
-            width = 20
-            height = 20
-            rect = [x, y, width, height]
-            if is_white(i, j):
-                color = [255, 255, 255]
-                pygame.draw.rect(screen, color, rect)
-
+def move_snake():
+    global snake
+    global fruit
+    snake = [[10, 15], [11, 15], [12, 15]]
+    fruit = [10, 10]
+    score = 0
+        
     head = snake[-1]
     new_head = [head[0] + direction[0], head[1] + direction[1]]
 
@@ -68,25 +82,39 @@ while True:
     else:
         snake = snake[1:] + [new_head]
 
-    blue = [0, 0, 255]
-    rect_ = [fruit[0] * 20, fruit[1] * 20, 20, 20]
-    pygame.draw.rect(screen, blue, rect_)
-
-    for x, y in snake:
-        rect = [20 * x, 20 * y, 20, 20]
-        pygame.draw.rect(screen, [255, 0, 0], rect)
-
+   #Conditions d'arrêt
     if snake[-1] in snake[:-1]:
-        pygame.quit()
-        sys.exit()
-
+        exit()
+    
     L = [k for k in range(30)]
-
     if snake[-1][0] not in L or snake[-1][1] not in L:
-        pygame.quit()
-        sys.exit()
+        exit()
 
+    #score
     pygame.display.set_caption(f"🐍 Score: {score}")
 
-    pygame.display.update()
-    clock.tick(3)
+
+screen, clock = setup()
+while True:
+    handle_events()
+    move_snake()
+    draw_frame(screen)
+    wait_for_next_frame(clock)
+
+
+
+   #Damier
+    '''screen.fill([0, 0, 0])
+    def is_white(i, j):
+        if (i + j) % 2 == 0:
+            return True
+        else:
+            return False
+    for i in range(WIDTH):
+        for j in range(HEIGHT):
+            x = i * CELL_SIZE
+            y = j * CELL_SIZE
+            rect = [x, y, CELL_SIZE, CELL_SIZE]
+            if is_white(i, j):
+                color = [255, 255, 255]
+                pygame.draw.rect(screen, color, rect)'''
